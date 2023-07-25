@@ -29,7 +29,7 @@ def scale_data(X_train, y_train, X_val, y_val, X_test, y_test):
     
     return X_train, y_train, X_val, y_val, X_test, y_test
 
-    status = 'experiment' # control
+    # status = 'experiment' # control
 def experiment(status='control'):
     # read data
     # ,Timestamp,hour,weekday,Holiday,zid,Humidity,Ambient pressure,Temp,speed,green_area,road_area,buildings,NO
@@ -88,7 +88,9 @@ def experiment(status='control'):
             selector = rfe.fit(X_train,y_train)
             print(selector.support_)
             print(selector.ranking_)
-            selected_features = np.array(features)[rfe.get_support()]
+            sel_index = rfe.get_support()
+            sel_index = [var for var in sel_index if not None]
+            selected_features = np.array(features)[sel_index]
             
             X_train = train[selected_features]
             X_val = val[selected_features]
