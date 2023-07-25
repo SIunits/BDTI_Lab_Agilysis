@@ -88,8 +88,10 @@ def experiment(status='control'):
             selector = rfe.fit(X_train,y_train)
             print(selector.support_)
             print(selector.ranking_)
-            sel_index = rfe.get_support()
-            sel_index = [var for var in sel_index if not None]
+            sel_index = selector.support_  # rfe.get_support()
+            sel_index = [var for var in sel_index if isinstance(var, bool)]
+            if len(sel_index) > len(features) :
+                sel_index.pop(0)
             selected_features = np.array(features)[sel_index]
             
             X_train = train[selected_features]
