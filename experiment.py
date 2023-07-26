@@ -85,13 +85,14 @@ def experiment(status='control'):
             # NOTE: select the best features using feature importance /// Recursive Feature Elimination with Cross-Validation
             rfe = RFECV(rf,cv=5,scoring="neg_mean_squared_error")
             selector = rfe.fit(X_train,y_train)
-            print(selector.support_)
-            print(selector.ranking_)
-            sel_index = selector.support_  # rfe.get_support()
-            sel_index = [var for var in sel_index if isinstance(var, bool)]
-            if len(sel_index) > len(features) :
-                sel_index[0].pop(0)
-            selected_features = np.array(features)[selector.support_]
+
+            # Get the boolean mask of selected features
+            selected_features_mask = selector.support_
+            if '' in selected_features_mask:
+                selected_features_mask.remove('')
+
+            # Get the names of the selected features
+            selected_features = np.array(features)[selected_features_mask]
             
             X_train = train[selected_features]
             X_val = val[selected_features]
@@ -142,5 +143,5 @@ def experiment(status='control'):
         # model evaluation
 
 if __name__ == '__main__':
-    experiment(status='control')
     experiment(status='experiment')
+    experiment(status='control')
