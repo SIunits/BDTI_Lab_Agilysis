@@ -79,8 +79,10 @@ def experiment(name, status='control'):
             f_i = list(zip(features,rf.feature_importances_))
             f_i.sort(key = lambda x : x[1])
             plt.barh([x[0] for x in f_i],[x[1] for x in f_i])
+            plt.title(f'Feature ranking for {pol} ({status})')
             # plt.show()
             plt.savefig(f'result/{name}_{pol}_F_rank.jpg')
+            plt.close()
 
             # NOTE: select the best features using feature importance /// Recursive Feature Elimination with Cross-Validation
             rfe = RFECV(rf,cv=5,scoring="neg_mean_squared_error")
@@ -125,7 +127,7 @@ def experiment(name, status='control'):
         y_test_sc = sc_y_test.fit_transform([y_test.values])[0]
 
         # model training/validation
-        mlflow.autolog(log_models=False, log_datasets=False)
+        mlflow.autolog(log_models=False) # ,log_datasets=False)
         mlflow.set_experiment(experiment_name=name)
         # mlflow.log_dict("pollutant", pol)
         # mlflow.log_param("exp_status", status)
@@ -144,11 +146,12 @@ def experiment(name, status='control'):
         # X_grid = X_grid.reshape((len(X_grid), 1))
         plt.scatter(y_test_sc, model.predict(X_test_sc), color = 'red')
         plt.plot(y_test_sc, y_test_sc, color = 'blue')
-        plt.title('{pol} ({status}) - SVR')
+        plt.title(f'{pol} ({status}) - SVR')
         plt.xlabel('True values')
         plt.ylabel('Predicted values')
         # plt.show()
         plt.savefig(f'result/{name}_{pol}_{status}.jpg')
+        plt.close()
         
 
         # model evaluation
