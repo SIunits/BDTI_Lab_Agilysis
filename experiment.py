@@ -91,7 +91,7 @@ def experiment(status='control'):
             sel_index = [var for var in sel_index if isinstance(var, bool)]
             if len(sel_index) > len(features) :
                 sel_index[0].pop(0)
-            selected_features = np.array(features)[sel_index]
+            selected_features = np.array(features)[selector.support_]
             
             X_train = train[selected_features]
             X_val = val[selected_features]
@@ -123,18 +123,19 @@ def experiment(status='control'):
             # model validation
             
         # model evaluation
-        y_pred = model.predict(X_test_sc)
-        y_pred = sc_y_train.inverse_transform(y_pred) 
+        # y_pred = model.predict(X_test_sc)
+        y_pred = sc_y_train.inverse_transform([y_pred]) 
         
-        X_grid = np.arange(min(X_train_sc), max(X_train_sc), 0.01) #this step required because data is feature scaled.
-        X_grid = X_grid.reshape((len(X_grid), 1))
-        plt.scatter(X_test_sc, y_test_sc, color = 'red')
-        plt.plot(X_test_sc, model.predict(X_test_sc), color = 'blue')
+        # X_grid = np.arange(min(X_train_sc), max(X_train_sc), 0.01) #this step required because data is feature scaled.
+        # X_grid = X_grid.reshape((len(X_grid), 1))
+        plt.scatter(y_test_sc, model.predict(X_test_sc), color = 'red')
+        plt.plot(y_test_sc, y_test_sc, color = 'blue')
         plt.title('Truth or Bluff (SVR)')
-        plt.xlabel('Independent')
-        plt.ylabel('Pollution')
+        plt.xlabel('True values')
+        plt.ylabel('Predicted values')
         # plt.show()
         plt.savefig(f'result/{pol}_{status}.jpg')
+        
 
         # model evaluation
 
