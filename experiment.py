@@ -114,7 +114,9 @@ def experiment(status='control'):
 
         # model training/validation
         mlflow.autolog()
-        mlflow.set_experiment(experiment_name=f"agilysis_{pol}_{status}")
+        mlflow.set_experiment(experiment_name='agilysis_0')
+        mlflow.log_metric("pollutant", pol)
+        mlflow.log_metric("exp_status", status)
         with mlflow.start_run():
             # model training
             regressor = SVR(kernel='rbf')
