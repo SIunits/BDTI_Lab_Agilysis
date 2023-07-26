@@ -90,21 +90,12 @@ def experiment(name, status='control'):
 
             # Get the boolean mask of selected features
             selected_features_mask = list(selector.support_)
-            # print(selected_features_mask)
             if '' in selected_features_mask:
                 selected_features_mask.remove('')
             if ' ' in selected_features_mask:
                 selected_features_mask.remove(' ')
-            # print(selected_features_mask)
 
-            # if ' ' in selected_features_mask:
-            #     selected_features_mask.remove(' ')
-
-            # Get the names of the selected features
-            # print(features)
-            # print(selected_features_mask)
             features.remove(pol)
-            # print(features)
             selected_features = np.array(features)[selected_features_mask]
             
             X_train = train[selected_features]
@@ -125,17 +116,16 @@ def experiment(name, status='control'):
         y_val_sc = sc_y_val.fit_transform([y_val.values])[0]
         X_test_sc = sc_X_test.fit_transform(X_test.values)
         y_test_sc = sc_y_test.fit_transform([y_test.values])[0]
-
+        
         # model training/validation
-        mlflow.autolog(log_models=False) # ,log_datasets=False)
+        mlflow.autolog(log_models=False)
         mlflow.set_experiment(experiment_name=name)
-        # mlflow.log_dict("pollutant", pol)
-        # mlflow.log_param("exp_status", status)
+        model = ''
         with mlflow.start_run(nested=True, tags={'pollutant':pol, 'exp_status':status}):
             # model training
             regressor = SVR(kernel='rbf')
             model = regressor.fit(X_train_sc, y_train_sc)
-            # mlflow.end_run()
+            
             # model validation
             
         # model evaluation
@@ -144,6 +134,8 @@ def experiment(name, status='control'):
         
         # X_grid = np.arange(min(X_train_sc), max(X_train_sc), 0.01) #this step required because data is feature scaled.
         # X_grid = X_grid.reshape((len(X_grid), 1))
+        print(y_test_sc)
+        print(model.predict(X_test_sc))
         plt.scatter(y_test_sc, model.predict(X_test_sc), color = 'red')
         plt.plot(y_test_sc, y_test_sc, color = 'blue')
         plt.title(f'{pol} ({status}) - SVR')
@@ -157,5 +149,5 @@ def experiment(name, status='control'):
         # model evaluation
 
 if __name__ == '__main__':
-    experiment(name = 'agilysis_1', status='experiment')
     experiment(name = 'agilysis_1', status='control')
+    experiment(name = 'agilysis_1', status='experiment')
