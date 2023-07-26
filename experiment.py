@@ -115,24 +115,24 @@ def experiment(status='control'):
         # model training/validation
         mlflow.autolog()
         mlflow.set_experiment(experiment_name='agilysis_0')
-        mlflow.log_metric("pollutant", pol)
-        mlflow.log_metric("exp_status", status)
-        with mlflow.start_run():
+        mlflow.log_text("pollutant", pol)
+        mlflow.log_text("exp_status", status)
+        with mlflow.start_run(nested=True):
             # model training
             regressor = SVR(kernel='rbf')
             model = regressor.fit(X_train_sc, y_train_sc)
-            
+            # mlflow.end_run()
             # model validation
             
         # model evaluation
         # y_pred = model.predict(X_test_sc)
-        y_pred = sc_y_train.inverse_transform([y_pred]) 
+        # y_pred = sc_y_train.inverse_transform([y_pred]) 
         
         # X_grid = np.arange(min(X_train_sc), max(X_train_sc), 0.01) #this step required because data is feature scaled.
         # X_grid = X_grid.reshape((len(X_grid), 1))
         plt.scatter(y_test_sc, model.predict(X_test_sc), color = 'red')
         plt.plot(y_test_sc, y_test_sc, color = 'blue')
-        plt.title('Truth or Bluff (SVR)')
+        plt.title('{pol} ({status}) - SVR')
         plt.xlabel('True values')
         plt.ylabel('Predicted values')
         # plt.show()
