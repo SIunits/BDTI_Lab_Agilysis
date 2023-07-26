@@ -29,7 +29,7 @@ def scale_data(X_train, y_train, X_val, y_val, X_test, y_test):
     return X_train, y_train, X_val, y_val, X_test, y_test
 
     # status = 'experiment' # control
-def experiment(status='control'):
+def experiment(name, status='control'):
     # read data
     # ,Timestamp,hour,weekday,Holiday,zid,Humidity,Ambient pressure,Temp,speed,green_area,road_area,buildings,NO
     pollutants = ['NO', 'NO2', 'O3', 'PM1', 'PM10', 'PM25']
@@ -80,18 +80,29 @@ def experiment(status='control'):
             f_i.sort(key = lambda x : x[1])
             plt.barh([x[0] for x in f_i],[x[1] for x in f_i])
             # plt.show()
-            plt.savefig(f'result/{pol}_F_rank.jpg')
+            plt.savefig(f'result/{name}_{pol}_F_rank.jpg')
 
             # NOTE: select the best features using feature importance /// Recursive Feature Elimination with Cross-Validation
             rfe = RFECV(rf,cv=5,scoring="neg_mean_squared_error")
             selector = rfe.fit(X_train,y_train)
 
             # Get the boolean mask of selected features
-            selected_features_mask = selector.support_
+            selected_features_mask = list(selector.support_)
+            # print(selected_features_mask)
             if '' in selected_features_mask:
                 selected_features_mask.remove('')
+            if ' ' in selected_features_mask:
+                selected_features_mask.remove(' ')
+            # print(selected_features_mask)
+
+            # if ' ' in selected_features_mask:
+            #     selected_features_mask.remove(' ')
 
             # Get the names of the selected features
+            # print(features)
+            # print(selected_features_mask)
+            features.remove(pol)
+            # print(features)
             selected_features = np.array(features)[selected_features_mask]
             
             X_train = train[selected_features]
@@ -115,10 +126,10 @@ def experiment(status='control'):
 
         # model training/validation
         mlflow.autolog()
-        mlflow.set_experiment(experiment_name='agilysis_0')
-        mlflow.log_text("pollutant", pol)
-        mlflow.log_text("exp_status", status)
-        with mlflow.start_run(nested=True):
+        mlflow.set_experiment(experiment_name=name)
+        # mlflow.log_dict("pollutant", pol)
+        # mlflow.log_param("exp_status", status)
+        with mlflow.start_run(nested=True, log_models=False, log_datasets=False, tags={'pollutant':pol, 'exp_status':status}):
             # model training
             regressor = SVR(kernel='rbf')
             model = regressor.fit(X_train_sc, y_train_sc)
@@ -137,11 +148,11 @@ def experiment(status='control'):
         plt.xlabel('True values')
         plt.ylabel('Predicted values')
         # plt.show()
-        plt.savefig(f'result/{pol}_{status}.jpg')
+        plt.savefig(f'result/{name}_{pol}_{status}.jpg')
         
 
         # model evaluation
 
 if __name__ == '__main__':
-    experiment(status='experiment')
-    experiment(status='control')
+    experiment(name = 'agilysis_1', status='experiment')
+    experiment(name = 'agilysis_1', status='control')
