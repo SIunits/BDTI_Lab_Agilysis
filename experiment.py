@@ -9,8 +9,7 @@ from sklearn.svm import SVR
 from matplotlib import pyplot as plt
 import mlflow
 
-mlflow.autolog()
-mlflow.set_experiment(experiment_name="agilysis")
+
 
 def scale_data(X_train, y_train, X_val, y_val, X_test, y_test):
     sc_X_train = StandardScaler()
@@ -91,7 +90,7 @@ def experiment(status='control'):
             sel_index = selector.support_  # rfe.get_support()
             sel_index = [var for var in sel_index if isinstance(var, bool)]
             if len(sel_index) > len(features) :
-                sel_index.pop(0)
+                sel_index[0].pop(0)
             selected_features = np.array(features)[sel_index]
             
             X_train = train[selected_features]
@@ -106,14 +105,16 @@ def experiment(status='control'):
         sc_X_test = StandardScaler()
         sc_y_test = StandardScaler()
         
-        X_train_sc = sc_X_train.fit_transform(X_train)
-        y_train_sc = sc_y_train.fit_transform(y_train)
-        X_val_sc = sc_X_val.fit_transform(X_val)
-        y_val_sc = sc_y_val.fit_transform(y_val)
-        X_test_sc = sc_X_test.fit_transform(X_test)
-        y_test_sc = sc_y_test.fit_transform(y_test)
+        X_train_sc = sc_X_train.fit_transform(X_train.values)
+        y_train_sc = sc_y_train.fit_transform([y_train.values])[0]
+        X_val_sc = sc_X_val.fit_transform(X_val.values)
+        y_val_sc = sc_y_val.fit_transform([y_val.values])[0]
+        X_test_sc = sc_X_test.fit_transform(X_test.values)
+        y_test_sc = sc_y_test.fit_transform([y_test.values])[0]
 
         # model training/validation
+        mlflow.autolog()
+        mlflow.set_experiment(experiment_name=f"agilysis_{pol}_{status}")
         with mlflow.start_run():
             # model training
             regressor = SVR(kernel='rbf')
@@ -122,13 +123,13 @@ def experiment(status='control'):
             # model validation
             
         # model evaluation
-        y_pred = regressor.predict(X_test_sc)
+        y_pred = model.predict(X_test_sc)
         y_pred = sc_y_train.inverse_transform(y_pred) 
         
         X_grid = np.arange(min(X_train_sc), max(X_train_sc), 0.01) #this step required because data is feature scaled.
         X_grid = X_grid.reshape((len(X_grid), 1))
         plt.scatter(X_test_sc, y_test_sc, color = 'red')
-        plt.plot(X_test_sc, regressor.predict(X_test_sc), color = 'blue')
+        plt.plot(X_test_sc, model.predict(X_test_sc), color = 'blue')
         plt.title('Truth or Bluff (SVR)')
         plt.xlabel('Independent')
         plt.ylabel('Pollution')
@@ -138,5 +139,5 @@ def experiment(status='control'):
         # model evaluation
 
 if __name__ == '__main__':
-    experiment(status='experiment')
     experiment(status='control')
+    experiment(status='experiment')
