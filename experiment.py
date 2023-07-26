@@ -125,11 +125,11 @@ def experiment(name, status='control'):
         y_test_sc = sc_y_test.fit_transform([y_test.values])[0]
 
         # model training/validation
-        mlflow.autolog()
+        mlflow.autolog(log_models=False, log_datasets=False)
         mlflow.set_experiment(experiment_name=name)
         # mlflow.log_dict("pollutant", pol)
         # mlflow.log_param("exp_status", status)
-        with mlflow.start_run(nested=True, log_models=False, log_datasets=False, tags={'pollutant':pol, 'exp_status':status}):
+        with mlflow.start_run(nested=True, tags={'pollutant':pol, 'exp_status':status}):
             # model training
             regressor = SVR(kernel='rbf')
             model = regressor.fit(X_train_sc, y_train_sc)
