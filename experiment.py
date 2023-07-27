@@ -1,4 +1,5 @@
 # import libraries
+import os
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor # RandomForestClassfier
@@ -28,8 +29,21 @@ def scale_data(X_train, y_train, X_val, y_val, X_test, y_test):
     
     return X_train, y_train, X_val, y_val, X_test, y_test
 
-    # status = 'experiment' # control
+def create_exp_folder(directory_name):
+    path = 'result'  # Replace with the desired parent directory path
+
+    # Combine the parent directory path with the directory name
+    full_path = os.path.join(path, directory_name)
+
+    # Create the directory
+    print(full_path)
+    os.makedirs(full_path, exist_ok=True)
+    print('[INFO]: created directory for the experiment.')
+
+
 def experiment(name, status='control'):
+    create_exp_folder(name)
+
     # read data
     # ,Timestamp,hour,weekday,Holiday,zid,Humidity,Ambient pressure,Temp,speed,green_area,road_area,buildings,NO
     pollutants = ['NO', 'NO2', 'O3', 'PM1', 'PM10', 'PM25']
@@ -82,7 +96,7 @@ def experiment(name, status='control'):
             plt.barh([x[0] for x in f_i],[x[1] for x in f_i])
             plt.title(f'Feature ranking for {pol} ({status})')
             # plt.show()
-            plt.savefig(f'result/{name}_{pol}_F_rank.jpg')
+            plt.savefig(f'result/{name}/{name}_{pol}_F_rank.jpg')
             plt.close()
 
             # NOTE: select the best features using feature importance /// Recursive Feature Elimination with Cross-Validation
@@ -122,7 +136,7 @@ def experiment(name, status='control'):
         mlflow.autolog(log_models=False)
         mlflow.set_experiment(experiment_name=name)
         model = ''
-        with mlflow.start_run(nested=True, tags={'pollutant':pol, 'exp_status':status}):
+        with mlflow.start_run(tags={'pollutant':pol, 'exp_status':status}):
             # model training
             regressor = SVR(kernel='rbf')
             model = regressor.fit(X_train_sc, y_train_sc)
@@ -143,12 +157,13 @@ def experiment(name, status='control'):
         plt.xlabel('True values')
         plt.ylabel('Predicted values')
         # plt.show()
-        plt.savefig(f'result/{name}_{pol}_{status}.jpg')
+        plt.savefig(f'result/{name}/{name}_{pol}_{status}.jpg')
         plt.close()
         
 
         # model evaluation
 
 if __name__ == '__main__':
-    experiment(name = 'agilysis_1', status='control')
-    experiment(name = 'agilysis_1', status='experiment')
+    name = 'agilysis_2'
+    experiment(name = name, status='control')
+    experiment(name = name, status='experiment')
