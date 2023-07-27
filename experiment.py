@@ -36,7 +36,8 @@ def experiment(name, status='control'):
     for pol in pollutants:
         features = ['weekday','Holiday','zid','Humidity','Ambient pressure','Temp','speed','green_area','road_area','buildings', pol]
         data = pd.read_csv(f'data/{pol}.csv', usecols=features)
-        data = data.fillna(0)
+        data = data.dropna() # .fillna(0)
+        data = data.drop(data[data[pol] == 0].index)
         # print(data.head())
 
         # data preparation/splitting
@@ -111,11 +112,11 @@ def experiment(name, status='control'):
         sc_y_test = StandardScaler()
         
         X_train_sc = sc_X_train.fit_transform(X_train.values)
-        y_train_sc = sc_y_train.fit_transform([y_train.values])[0]
+        y_train_sc = y_train  # (sc_y_train.fit_transform([y_train.values]))[0]
         X_val_sc = sc_X_val.fit_transform(X_val.values)
-        y_val_sc = sc_y_val.fit_transform([y_val.values])[0]
+        y_val_sc = y_val  # (sc_y_val.fit_transform([y_val.values]))[0]
         X_test_sc = sc_X_test.fit_transform(X_test.values)
-        y_test_sc = sc_y_test.fit_transform([y_test.values])[0]
+        y_test_sc = y_test  # (sc_y_test.fit_transform([y_test.values]))[0]
         
         # model training/validation
         mlflow.autolog(log_models=False)
@@ -134,8 +135,8 @@ def experiment(name, status='control'):
         
         # X_grid = np.arange(min(X_train_sc), max(X_train_sc), 0.01) #this step required because data is feature scaled.
         # X_grid = X_grid.reshape((len(X_grid), 1))
-        print(y_test_sc)
-        print(model.predict(X_test_sc))
+        # print(y_test_sc)
+        # print(model.predict(X_test_sc))
         plt.scatter(y_test_sc, model.predict(X_test_sc), color = 'red')
         plt.plot(y_test_sc, y_test_sc, color = 'blue')
         plt.title(f'{pol} ({status}) - SVR')
