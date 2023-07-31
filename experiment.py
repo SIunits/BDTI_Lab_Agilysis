@@ -1,5 +1,5 @@
 # import libraries
-import os
+import os, random
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor # RandomForestClassfier
@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 import mlflow
 
 
-
+ 
 def scale_data(X_train, y_train, X_val, y_val, X_test, y_test):
     sc_X_train = StandardScaler()
     sc_y_train = StandardScaler()
