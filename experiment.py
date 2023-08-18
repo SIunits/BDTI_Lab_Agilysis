@@ -46,7 +46,7 @@ def experiment(name, status='control'):
 
     # read data
     # ,Timestamp,hour,weekday,Holiday,zid,Humidity,Ambient pressure,Temp,speed,green_area,road_area,buildings,NO
-    pollutants = ['NO', 'NO2', 'O3', 'PM1', 'PM10', 'PM25']
+    pollutants = ['PM1'] # ['NO', 'NO2', 'O3', 'PM1', 'PM10', 'PM25']
     for pol in pollutants:
         features = ['weekday','Holiday','zid','Humidity','Ambient pressure','Temp','speed','green_area','road_area','buildings', pol]
         data = pd.read_csv(f'data/{pol}.csv', usecols=features)
@@ -135,6 +135,7 @@ def experiment(name, status='control'):
         # model training/validation
         mlflow.autolog(log_models=False)
         mlflow.set_experiment(experiment_name=name)
+        
         model = ''
         with mlflow.start_run(tags={'pollutant':pol, 'exp_status':status}):
             # model training
@@ -164,6 +165,6 @@ def experiment(name, status='control'):
         # model evaluation
 
 if __name__ == '__main__':
-    name = 'agilysis_2'
+    name = 'agilysis_3'
     experiment(name = name, status='control')
     experiment(name = name, status='experiment')
